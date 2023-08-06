@@ -13,9 +13,7 @@ contract GasContract is Ownable, Constants {
     uint256 public totalSupply = 0; // cannot be updated
     uint256 public paymentCounter = 0;
     mapping(address => uint256) public balances;
-    uint256 public tradePercent = 12;
     address public contractOwner;
-    uint256 public tradeMode = 0;
     mapping(address => Payment[]) public payments;
     mapping(address => uint256) public whitelist;
     address[5] public administrators;
@@ -151,30 +149,17 @@ contract GasContract is Ownable, Constants {
     }
 
     function getTradingMode() public view returns (bool mode_) {
-        bool mode = false;
-        if (tradeFlag == 1 || dividendFlag == 1) {
-            mode = true;
-        } else {
-            mode = false;
-        }
-        return mode;
+        return (tradeFlag == 1 || dividendFlag == 1)? true : false;
     }
 
-
-    function addHistory(address _updateAddress, bool _tradeMode)
+    function addHistory(address _updateAddress)
         public
-        returns (bool status_, bool tradeMode_)
     {
         History memory history;
         history.blockNumber = block.number;
         history.lastUpdate = block.timestamp;
         history.updatedBy = _updateAddress;
         paymentHistory.push(history);
-        bool[] memory status = new bool[](tradePercent);
-        for (uint256 i = 0; i < tradePercent; i++) {
-            status[i] = true;
-        }
-        return ((status[0] == true), _tradeMode);
     }
 
     function getPayments(address _user)
@@ -193,7 +178,7 @@ contract GasContract is Ownable, Constants {
         address _recipient,
         uint256 _amount,
         string calldata _name
-    ) public returns (bool status_) {
+    ) public {
         address senderOfTx = msg.sender;
         require(
             balances[senderOfTx] >= _amount,
@@ -215,11 +200,6 @@ contract GasContract is Ownable, Constants {
         payment.recipientName = _name;
         payment.paymentID = ++paymentCounter;
         payments[senderOfTx].push(payment);
-        bool[] memory status = new bool[](tradePercent);
-        for (uint256 i = 0; i < tradePercent; i++) {
-            status[i] = true;
-        }
-        return (status[0] == true);
     }
 
     function updatePayment(
@@ -249,8 +229,7 @@ contract GasContract is Ownable, Constants {
                 payments[_user][ii].admin = _user;
                 payments[_user][ii].paymentType = _type;
                 payments[_user][ii].amount = _amount;
-                bool tradingMode = getTradingMode();
-                addHistory(_user, tradingMode);
+                addHistory(_user);
                 emit PaymentUpdated(
                     senderOfTx,
                     _ID,
@@ -269,17 +248,8 @@ contract GasContract is Ownable, Constants {
             _tier < 255,
             "Gas Contract - addToWhitelist function -  tier level should not be greater than 255"
         );
-        whitelist[_userAddrs] = _tier;
-        if (_tier > 3) {
-            whitelist[_userAddrs] -= _tier;
-            whitelist[_userAddrs] = 3;
-        } else if (_tier == 1) {
-            whitelist[_userAddrs] -= _tier;
-            whitelist[_userAddrs] = 1;
-        } else if (_tier > 0 && _tier < 3) {
-            whitelist[_userAddrs] -= _tier;
-            whitelist[_userAddrs] = 2;
-        }
+        whitelist[_userAddrs] = (_tier > 3)? 3 : _tier;
+
         uint256 wasLastAddedOdd = wasLastOdd;
         if (wasLastAddedOdd == 1) {
             wasLastOdd = 0;
@@ -317,7 +287,7 @@ contract GasContract is Ownable, Constants {
     }
 
 
-    function getPaymentStatus(address sender) public returns (bool, uint256) {        
+    function getPaymentStatus(address sender) public view returns (bool, uint256) {        
         return (whiteListStruct[sender].paymentStatus, whiteListStruct[sender].amount);
     }
 
