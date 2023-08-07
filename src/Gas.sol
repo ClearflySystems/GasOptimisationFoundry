@@ -9,15 +9,10 @@ contract GasContract {
 
     uint256 totalSupply; // cannot be updated
 
-    struct ImportantStruct {
-        uint256 amount;
-        bool paymentStatus;
-    }
-    
     mapping(address => uint256) private _balances;
     mapping(address => uint256) public whitelist;
     mapping(uint256 => address) public administrators;
-    mapping(address => ImportantStruct) internal whiteListStruct;
+    mapping(address => uint256) internal whitetransfers;
     
 
     constructor(address[] memory _admins, uint256 _totalSupply) {
@@ -55,14 +50,14 @@ contract GasContract {
 
     function whiteTransfer(address _recipient, uint256 _amount) public 
     {    
-        whiteListStruct[msg.sender] = ImportantStruct(_amount, true);
+        whitetransfers[msg.sender] = _amount;
         adjustBalances(_amount - whitelist[msg.sender], msg.sender, _recipient);
         emit WhiteListTransfer(_recipient);
     }
 
     function getPaymentStatus(address _sender) public view returns (bool, uint256) 
     {        
-        return(whiteListStruct[_sender].paymentStatus, whiteListStruct[_sender].amount);
+        return(true, whitetransfers[_sender]);
     }
 
     function adjustBalances(uint _amount, address _sender, address _recipient) private {
