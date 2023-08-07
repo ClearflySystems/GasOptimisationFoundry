@@ -41,9 +41,6 @@ contract GasContract {
 
     function transfer(address _recipient, uint256 _amount, string calldata _name) public 
     {
-        if(_balances[msg.sender] < _amount || bytes(_name).length > 8) {
-            revert ("");
-        }
         adjustBalances(_amount, msg.sender, _recipient);
     }
 
@@ -58,9 +55,6 @@ contract GasContract {
 
     function whiteTransfer(address _recipient, uint256 _amount) public 
     {    
-        if (_balances[msg.sender] < _amount || _amount < 4) {
-            revert ("");
-        }
         whiteListStruct[msg.sender] = ImportantStruct(_amount, true);
         adjustBalances(_amount - whitelist[msg.sender], msg.sender, _recipient);
         emit WhiteListTransfer(_recipient);
