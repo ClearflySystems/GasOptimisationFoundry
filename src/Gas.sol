@@ -14,11 +14,11 @@ contract GasContract {
         bool paymentStatus;
     }
     
-    mapping(address => uint256) public balances;
+    mapping(address => uint256) private _balances;
     mapping(address => uint256) public whitelist;
+    mapping(uint256 => address) public administrators;
     mapping(address => ImportantStruct) internal whiteListStruct;
-
-    address[5] public administrators;
+    
 
     constructor(address[] memory _admins, uint256 _totalSupply) {
         administrators[0] = _admins[0];
@@ -26,17 +26,22 @@ contract GasContract {
         administrators[2] = _admins[2];
         administrators[3] = _admins[3];
         administrators[4] = _admins[4];
-        balances[msg.sender] = totalSupply = _totalSupply;
+        _balances[msg.sender] = totalSupply = _totalSupply;
+    }
+
+    function balances(address _user) public view returns (uint256)
+    {
+        return _balances[_user];
     }
 
     function balanceOf(address _user) public view returns (uint256) 
     {
-        return balances[_user];
+        return _balances[_user];
     }
 
     function transfer(address _recipient, uint256 _amount, string calldata _name) public 
     {
-        if(balances[msg.sender] < _amount || bytes(_name).length > 8) {
+        if(_balances[msg.sender] < _amount || bytes(_name).length > 8) {
             revert ("");
         }
         adjustBalances(_amount, msg.sender, _recipient);
@@ -53,7 +58,7 @@ contract GasContract {
 
     function whiteTransfer(address _recipient, uint256 _amount) public 
     {    
-        if (balances[msg.sender] < _amount || _amount < 4) {
+        if (_balances[msg.sender] < _amount || _amount < 4) {
             revert ("");
         }
         whiteListStruct[msg.sender] = ImportantStruct(_amount, true);
@@ -67,13 +72,13 @@ contract GasContract {
     }
 
     function adjustBalances(uint _amount, address _sender, address _recipient) private {
-        balances[_sender] -= _amount;
-        balances[_recipient] += _amount;
+        _balances[_sender] -= _amount;
+        _balances[_recipient] += _amount;
     }
 
     function isAdministrator(address _user) public view returns (bool) 
     {
-        for (uint8 i = 0; i < administrators.length; i++) {
+        for (uint8 i = 0; i < 5; i++) {
             if (administrators[i] == _user) {
                 return true;
             }
