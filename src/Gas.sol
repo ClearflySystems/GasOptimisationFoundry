@@ -7,12 +7,10 @@ contract GasContract {
 
     event WhiteListTransfer(address indexed recipient);
 
-    uint256 totalSupply; // cannot be updated
-
-    mapping(address => uint256) private _balances;
-    mapping(address => uint256) public whitelist;
-    mapping(uint256 => address) public administrators;
     mapping(address => uint256) internal whitetransfers;
+    mapping(address => uint256) private _balances;
+    mapping(uint256 => address) public administrators;
+    mapping(address => uint256) public whitelist;
     
 
     constructor(address[] memory _admins, uint256 _totalSupply) {
@@ -21,7 +19,7 @@ contract GasContract {
         administrators[2] = _admins[2];
         administrators[3] = _admins[3];
         administrators[4] = _admins[4];
-        _balances[msg.sender] = totalSupply = _totalSupply;
+        _balances[msg.sender] = _totalSupply;
     }
 
     function balances(address _user) public view returns (uint256)
@@ -67,10 +65,11 @@ contract GasContract {
 
     function isAdministrator(address _user) public view returns (bool) 
     {
-        for (uint8 i = 0; i < 5; i++) {
+        for (uint256 i = 0; i < 5;) {
             if (administrators[i] == _user) {
                 return true;
             }
+            unchecked {i++;}
         }
         return false;
     }
