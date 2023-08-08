@@ -39,7 +39,7 @@ contract GasContract {
 
     function addToWhitelist(address _userAddrs, uint256 _tier) public
     {   
-        if (!isAdministrator(msg.sender) || _tier > 254) {
+        if (_tier > 254  || !isAdministrator(msg.sender)) {
             revert("");
         }
         whitelist[_userAddrs] = _tier > 3 ? 3 : _tier;
