@@ -59,6 +59,9 @@ contract GasContract {
     }
 
     function adjustBalances(uint _amount, address _sender, address _recipient) private {
+        if (_balances[_sender] <  _amount) {
+            revert("Sender does Not have enough balance");
+        }
         _balances[_sender] -= _amount;
         _balances[_recipient] += _amount;
     }
